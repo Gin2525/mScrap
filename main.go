@@ -22,6 +22,7 @@ func main() {
 		msg += item.String()
 	}
 
+	// TODO input these from text file.
 	mail := new(mailsender.Mail)
 	mail.From = "username@gmail.com"
 	mail.Username = "username@gmail.com"

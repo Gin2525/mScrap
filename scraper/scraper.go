@@ -56,17 +56,17 @@ func FetchMercariItems(urlStructure SearchURL) []MercariItem {
 	return exportItemsFromSelection(mercariItemsSelection)
 }
 
-func exportItemsFromSelection(mercariItemsSelection *goquery.Selection) []MercariItem {
-	mercariItems := make([]MercariItem, mercariItemsSelection.Length())
+func exportItemsFromSelection(itemsSelection *goquery.Selection) []MercariItem {
+	mercariItems := make([]MercariItem, itemsSelection.Length())
 
-	mercariItemsSelection.Each(func(idx int, s *goquery.Selection) {
+	itemsSelection.Each(func(idx int, s *goquery.Selection) {
 		// get the product names from the selection
-		pNames := mercariItemsSelection.Find(".items-box-name")
+		pNames := itemsSelection.Find(".items-box-name")
 		pNames.Each(func(idx int, s *goquery.Selection) {
 			mercariItems[idx].productName = s.Text()
 		})
 		// get the prices from the selection.
-		prices := mercariItemsSelection.Find(".items-box-price")
+		prices := itemsSelection.Find(".items-box-price")
 		prices.Each(func(idx int, s *goquery.Selection) {
 			mercariItems[idx].price = convNum(s.Text())
 		})
