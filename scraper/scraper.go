@@ -34,6 +34,7 @@ type SearchURL struct {
 func buildURLStructure(keyword string, queries map[string]string) *SearchURL {
 	return &SearchURL{keyword, queries}
 }
+
 // RenderURL render url mercari search page
 func (urlStructure SearchURL) RenderURL() string {
 	url := MercariSerchBaseURL + "?keyword=" + urlStructure.Keyword + "&"
