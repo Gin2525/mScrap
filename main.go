@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
 	// "strconv"
 
 	"github.com/PuerkitoBio/goquery"
@@ -13,15 +14,7 @@ import (
 const (
 	// MercariSerchBaseURL means seach page in mercari
 	MercariSerchBaseURL string = "https://www.mercari.com/jp/search/"
-	//MercariProductBaseURL  means a web page about product in mercari
-	MercariProductBaseURL string = "https://www.mercari.com/jp/product_key/"
 )
-
-var queries = map[string]string {
-		"status_on_sale":"1",
-		"category_root":"5",
-		"category_child":"76",
-		"category_grand_child%5B702%5D":"1"}
 
 // MercariItem means item produced
 type MercariItem struct {
@@ -29,50 +22,52 @@ type MercariItem struct {
 	price       int
 }
 
-
 // SearchURL have material to render url
 type SearchURL struct {
 	keyword string
 	queries map[string]string
 }
 
-func buildSUrlStructure(keyword string ,queries map[string]string) *SearchURL{
-	return &SearchURL{keyword,queries}
+func buildURLStructure(keyword string, queries map[string]string) *SearchURL {
+	return &SearchURL{keyword, queries}
 }
 
-func (urlStructure SearchURL)renderSUrl() string{
-	url := MercariSerchBaseURL+"?keyword="+urlStructure.keyword+"&"
-	for k,v := range urlStructure.queries{
-		url += k +"=" +v+"&"
+func (urlStructure SearchURL) renderURL() string {
+	url := MercariSerchBaseURL + "?keyword=" + urlStructure.keyword + "&"
+	for k, v := range urlStructure.queries {
+		url += k + "=" + v + "&"
 	}
 	return url[:len(url)-1]
 }
 
-func fetchValueByName(name string) {
-	
-	url := buildSUrlStructure(name,queries).renderSUrl()
+func fetchValue(urlStructure SearchURL) []MercariItem {
+	url := urlStructure.renderURL()
 	res, _ := http.Get(url)
 	// read
 	buf, _ := ioutil.ReadAll(res.Body)
 	bReader := bytes.NewReader(buf)
 	doc, _ := goquery.NewDocumentFromReader(bReader)
-
 	mercariItemsSelection := doc.Find(".items-box")
+	return exportItemsFromSelection(mercariItemsSelection)
+}
+
+func exportItemsFromSelection(mercariItemsSelection *goquery.Selection) []MercariItem {
 	mercariItems := make([]MercariItem, mercariItemsSelection.Length())
 
 	mercariItemsSelection.Each(func(idx int, s *goquery.Selection) {
-		pNames := mercariItemsSelection.Find("h3")
+		// get the product names from the selection
+		pNames := mercariItemsSelection.Find(".items-box-name")
 		pNames.Each(func(idx int, s *goquery.Selection) {
 			mercariItems[idx].productName = s.Text()
 		})
-		mercariItemsSelection.Find(".items-box-price").Each(func(idx int, s *goquery.Selection) {
+		// get the prices from the selection.
+		prices := mercariItemsSelection.Find(".items-box-price")
+		prices.Each(func(idx int, s *goquery.Selection) {
 			mercariItems[idx].price = convNum(s.Text())
 		})
 	})
 
-	for i, item := range mercariItems {
-		fmt.Println(i, item)
-	}
+	return mercariItems
 }
 
 func convNum(s string) int {
@@ -113,11 +108,12 @@ func main() {
 
 	// fmt.Println(fetchMinimumValueByProductKey("203_4984995903644"))
 	keyword := "十三機兵防衛圏"
-	queries := map[string]string {
-		"status_on_sale":"1",
-		"category_root":"5",
-		"category_child":"76",
-		"category_grand_child%5B702%5D":"1"}
-	urlStructure := SearchURL{keyword,queries}
-	fmt.Println(urlStructure.renderSUrl())
+	queries := map[string]string{
+		"status_on_sale":                "1",
+		"category_root":                 "5",
+		"category_child":                "76",
+		"category_grand_child%5B702%5D": "1"}
+	urlStructure := SearchURL{keyword, queries}
+	items :=fetchValue(urlStructure)
+	fmt.Println(items)
 }
