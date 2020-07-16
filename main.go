@@ -5,12 +5,23 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strconv"
+	// "strconv"
 
 	"github.com/PuerkitoBio/goquery"
-	// "github.com/saintfish/chardet"
-	// "golang.org/x/net/html/charset"
 )
+
+const (
+	// MercariSerchBaseURL means seach page in mercari
+	MercariSerchBaseURL string = "https://www.mercari.com/jp/search/"
+	//MercariProductBaseURL  means a web page about product in mercari
+	MercariProductBaseURL string = "https://www.mercari.com/jp/product_key/"
+)
+
+var queries = map[string]string {
+		"status_on_sale":"1",
+		"category_root":"5",
+		"category_child":"76",
+		"category_grand_child%5B702%5D":"1"}
 
 // MercariItem means item produced
 type MercariItem struct {
@@ -18,36 +29,41 @@ type MercariItem struct {
 	price       int
 }
 
+
+// SearchURL have material to render url
+type SearchURL struct {
+	keyword string
+	queries map[string]string
+}
+
+
 // ProductKeyURL have material to render url
 type ProductKeyURL struct {
 	base       string
 	productKey string
 }
 
-// MercariSerchURL means seach page in mercari
-const MercariSerchURL string = "https://www.mercari.com/jp/search/"
 
-//MercariProductBaseURL  means a web page about product in mercari
-const MercariProductBaseURL string = "https://www.mercari.com/jp/product_key/"
-
-func buildPUrl(productKey string) *ProductKeyURL {
+func buildPUrl(productKey string) ProductKeyURL {
 	productKeyURL := ProductKeyURL{MercariProductBaseURL, productKey}
-	return &productKeyURL
+	return productKeyURL
+}
+func buildSUrlStructure(keyword string ,queries map[string]string) *SearchURL{
+	return &SearchURL{keyword,queries}
+}
+
+func (urlStructure SearchURL)renderSUrl() string{
+	url := MercariSerchBaseURL+"?keyword="+urlStructure.keyword+"&"
+	for k,v := range urlStructure.queries{
+		url += k +"=" +v+"&"
+	}
+	return url[:len(url)-1]
 }
 func (url ProductKeyURL) renderURL() string {
 	return url.base + url.productKey + "/"
 }
 
-func appendKeyword(url, name string) string {
-	return url + "?keyword=" + name + "&"
-}
-
-// 1:now on sale
-func appendStatusOnSale(url string, status int) string {
-	return url + "?status_on_sale=" + strconv.Itoa(status) + "&"
-}
-
-func fetchItemMinimumValue(productKey string) int {
+func fetchMinimumValueByProductKey(productKey string) int {
 	url := buildPUrl(productKey).renderURL()
 	res, _ := http.Get(url)
 	buf, _ := ioutil.ReadAll(res.Body)
@@ -58,8 +74,8 @@ func fetchItemMinimumValue(productKey string) int {
 }
 
 func fetchValueByName(name string) {
-
-	url := appendStatusOnSale(appendKeyword(MercariSerchURL, name), 1)
+	
+	url := buildSUrlStructure(name,queries).renderSUrl()
 	res, _ := http.Get(url)
 	// read
 	buf, _ := ioutil.ReadAll(res.Body)
@@ -120,5 +136,13 @@ func main() {
 
 	// rslt := doc.Find("title").Text()
 
-	fmt.Println(fetchItemMinimumValue("203_4984995903644"))
+	// fmt.Println(fetchMinimumValueByProductKey("203_4984995903644"))
+	keyword := "十三機兵防衛圏"
+	queries := map[string]string {
+		"status_on_sale":"1",
+		"category_root":"5",
+		"category_child":"76",
+		"category_grand_child%5B702%5D":"1"}
+	urlStructure := SearchURL{keyword,queries}
+	fmt.Println(urlStructure.renderSUrl())
 }
