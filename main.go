@@ -18,8 +18,25 @@ type MercariItem struct {
 	price       int
 }
 
-// MercariURL means seach page in mercari
-const MercariURL string = "https://www.mercari.com/jp/search/"
+// ProductKeyURL have material to render url
+type ProductKeyURL struct {
+	base       string
+	productKey string
+}
+
+// MercariSerchURL means seach page in mercari
+const MercariSerchURL string = "https://www.mercari.com/jp/search/"
+
+//MercariProductBaseURL  means a web page about product in mercari
+const MercariProductBaseURL string = "https://www.mercari.com/jp/product_key/"
+
+func buildPUrl(productKey string) *ProductKeyURL {
+	productKeyURL := ProductKeyURL{MercariProductBaseURL, productKey}
+	return &productKeyURL
+}
+func (url ProductKeyURL) renderURL() string {
+	return url.base + url.productKey + "/"
+}
 
 func appendKeyword(url, name string) string {
 	return url + "?keyword=" + name + "&"
@@ -30,9 +47,19 @@ func appendStatusOnSale(url string, status int) string {
 	return url + "?status_on_sale=" + strconv.Itoa(status) + "&"
 }
 
+func fetchItemMinimumValue(productKey string) int {
+	url := buildPUrl(productKey).renderURL()
+	res, _ := http.Get(url)
+	buf, _ := ioutil.ReadAll(res.Body)
+	bReader := bytes.NewReader(buf)
+	doc, _ := goquery.NewDocumentFromReader(bReader)
+	result := doc.Find(".hfYsVF").Text()
+	return convNum(result)
+}
+
 func fetchValueByName(name string) {
 
-	url := appendStatusOnSale(appendKeyword(MercariURL, name), 1)
+	url := appendStatusOnSale(appendKeyword(MercariSerchURL, name), 1)
 	res, _ := http.Get(url)
 	// read
 	buf, _ := ioutil.ReadAll(res.Body)
@@ -48,7 +75,7 @@ func fetchValueByName(name string) {
 			mercariItems[idx].productName = s.Text()
 		})
 		mercariItemsSelection.Find(".items-box-price").Each(func(idx int, s *goquery.Selection) {
-			mercariItems[idx].price = convNum(s.Text()[2:])
+			mercariItems[idx].price = convNum(s.Text())
 		})
 	})
 
@@ -93,5 +120,5 @@ func main() {
 
 	// rslt := doc.Find("title").Text()
 
-	fetchValueByName("十三機兵防衛圏")
+	fmt.Println(fetchItemMinimumValue("203_4984995903644"))
 }
