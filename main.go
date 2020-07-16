@@ -82,29 +82,6 @@ func convNum(s string) int {
 }
 
 func main() {
-	// url := "https://www.youtube.com/channel/UCkkxn2ldlFUMupTlXU8meAw/videos"
-
-	// res, _ := http.Get(url)
-
-	// // read
-	// buf, _ := ioutil.ReadAll(res.Body)
-
-	// // char code
-	// det := chardet.NewTextDetector()
-	// detRslt, _ := det.DetectBest(buf)
-	// fmt.Println(detRslt.Charset)
-	// // => EUC-JP
-
-	// // convert char code
-	// bReader := bytes.NewReader(buf)
-	// reader, _ := charset.NewReaderLabel(detRslt.Charset, bReader)
-
-	// // HTML parse
-	// doc, _ := goquery.NewDocumentFromReader(reader)
-
-	// rslt := doc.Find("title").Text()
-
-	// fmt.Println(fetchMinimumValueByProductKey("203_4984995903644"))
 	keyword := "十三機兵防衛圏"
 	queries := map[string]string{
 		"status_on_sale":                "1",
