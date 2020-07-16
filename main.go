@@ -36,18 +36,6 @@ type SearchURL struct {
 	queries map[string]string
 }
 
-
-// ProductKeyURL have material to render url
-type ProductKeyURL struct {
-	base       string
-	productKey string
-}
-
-
-func buildPUrl(productKey string) ProductKeyURL {
-	productKeyURL := ProductKeyURL{MercariProductBaseURL, productKey}
-	return productKeyURL
-}
 func buildSUrlStructure(keyword string ,queries map[string]string) *SearchURL{
 	return &SearchURL{keyword,queries}
 }
@@ -58,19 +46,6 @@ func (urlStructure SearchURL)renderSUrl() string{
 		url += k +"=" +v+"&"
 	}
 	return url[:len(url)-1]
-}
-func (url ProductKeyURL) renderURL() string {
-	return url.base + url.productKey + "/"
-}
-
-func fetchMinimumValueByProductKey(productKey string) int {
-	url := buildPUrl(productKey).renderURL()
-	res, _ := http.Get(url)
-	buf, _ := ioutil.ReadAll(res.Body)
-	bReader := bytes.NewReader(buf)
-	doc, _ := goquery.NewDocumentFromReader(bReader)
-	result := doc.Find(".hfYsVF").Text()
-	return convNum(result)
 }
 
 func fetchValueByName(name string) {
