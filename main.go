@@ -44,7 +44,6 @@ func fetchValueByName(name string) {
 
 	mercariItemsSelection.Each(func(idx int, s *goquery.Selection) {
 		pNames := mercariItemsSelection.Find("h3")
-		// fmt.Println(idx,s2.Text())
 		pNames.Each(func(idx int, s *goquery.Selection) {
 			mercariItems[idx].productName = s.Text()
 		})
@@ -53,9 +52,9 @@ func fetchValueByName(name string) {
 		})
 	})
 
-		for i, item := range mercariItems {
+	for i, item := range mercariItems {
 		fmt.Println(i, item)
-		}
+	}
 }
 
 func convNum(s string) int {
