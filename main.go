@@ -6,8 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	// "strconv"
-
 	"github.com/PuerkitoBio/goquery"
 )
 
@@ -40,7 +38,7 @@ func (urlStructure SearchURL) renderURL() string {
 	return url[:len(url)-1]
 }
 
-func fetchValue(urlStructure SearchURL) []MercariItem {
+func fetchMercariItems(urlStructure SearchURL) []MercariItem {
 	url := urlStructure.renderURL()
 	res, _ := http.Get(url)
 	// read
@@ -114,6 +112,8 @@ func main() {
 		"category_child":                "76",
 		"category_grand_child%5B702%5D": "1"}
 	urlStructure := SearchURL{keyword, queries}
-	items :=fetchValue(urlStructure)
-	fmt.Println(items)
+	items := fetchMercariItems(urlStructure)
+	for _,item := range items{
+		fmt.Println(item)
+	}
 }
